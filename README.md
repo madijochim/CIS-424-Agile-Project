@@ -6,7 +6,7 @@ A web application designed to give small businesses an affordable, simplified pa
 
 ## Course
 
-**CIS 424 – Agile Software Development**
+**CIS 424 – Software Development With Agile Methodologies**
 
 ## Features
 
