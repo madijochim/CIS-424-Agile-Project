@@ -1,27 +1,16 @@
-const express = require("express");
-const cors = require("cors");
 const dotenv = require("dotenv");
-const connectDB = require("./config/db");
-const authRoutes = require("./routes/authRoutes");
 
 dotenv.config();
 
-const app = express();
+if (!process.env.JWT_SECRET) {
+  console.error("JWT_SECRET is required. Set it in backend/.env (see .env.example).");
+  process.exit(1);
+}
 
-// Connect to database
+const connectDB = require("./config/db");
+const app = require("./app");
+
 connectDB();
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Routes
-app.use("/api/auth", authRoutes);
-
-// Basic test route
-app.get("/", (req, res) => {
-  res.json({ message: "Backend is running." });
-});
 
 const PORT = process.env.PORT || 5000;
 

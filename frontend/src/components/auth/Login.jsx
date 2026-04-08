@@ -1,15 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { registerUser } from "../../services/authService";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../../services/authService";
 
-function Register() {
+function Login() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
     password: "",
   });
-
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -22,21 +20,14 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    setMessage("");
     setError("");
     setLoading(true);
 
     try {
-      const result = await registerUser(formData);
-      setMessage(result.message);
-      setFormData({
-        name: "",
-        email: "",
-        password: "",
-      });
+      await loginUser(formData);
+      navigate("/", { replace: true });
     } catch (err) {
-      setError(err.message || "Registration failed.");
+      setError(err.message || "Login failed.");
     } finally {
       setLoading(false);
     }
@@ -45,24 +36,9 @@ function Register() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
       <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h2 className="mb-6 text-center text-xl font-semibold text-slate-900">Create account</h2>
+        <h2 className="mb-6 text-center text-xl font-semibold text-slate-900">Sign in</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="mb-1 block text-sm font-medium text-slate-700">
-              Full name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-            />
-          </div>
-
           <div>
             <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
               Email
@@ -71,6 +47,7 @@ function Register() {
               id="email"
               name="email"
               type="email"
+              autoComplete="email"
               value={formData.email}
               onChange={handleChange}
               required
@@ -86,6 +63,7 @@ function Register() {
               id="password"
               name="password"
               type="password"
+              autoComplete="current-password"
               value={formData.password}
               onChange={handleChange}
               required
@@ -98,17 +76,16 @@ function Register() {
             disabled={loading}
             className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {loading ? "Registering…" : "Register"}
+            {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
 
-        {message && <p className="mt-4 text-sm text-green-700">{message}</p>}
         {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
         <p className="mt-6 text-center text-sm text-slate-600">
-          Already have an account?{" "}
-          <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-800">
-            Sign in
+          Need an account?{" "}
+          <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-800">
+            Register
           </Link>
         </p>
       </div>
@@ -116,4 +93,4 @@ function Register() {
   );
 }
 
-export default Register;
+export default Login;
