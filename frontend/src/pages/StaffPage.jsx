@@ -1,19 +1,175 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 function StaffPage({ user }) {
+  const [form, setForm] = useState({
+    name: "",
+    ssn: "",
+    department: "",
+    rate: "",
+    payType: "hourly",
+  });
+
+  const [employees, setEmployees] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/employees", {
+        credentials: "include",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error(data.message || data.error || "Failed to fetch employees.");
+        return;
+      }
+
+      setEmployees(data);
+    } catch (err) {
+      console.error("Error fetching employees:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!form.name || !form.ssn || !form.department || !form.rate || !form.payType) {
+      alert("All fields are required.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const res = await fetch("http://localhost:5000/api/employees", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ...form,
+          rate: Number(form.rate),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || data.error || "Failed to add employee.");
+        return;
+      }
+
+      alert("Employee added successfully!");
+
+      setForm({
+        name: "",
+        ssn: "",
+        department: "",
+        rate: "",
+        payType: "hourly",
+      });
+
+      await fetchEmployees();
+    } catch (err) {
+      console.error(err);
+      alert("Server error.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8">
-      <div className="mx-auto max-w-xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-sm text-slate-500">
-          <Link to="/" className="text-indigo-600 hover:underline">
-            ← Home
-          </Link>
-        </p>
-        <h1 className="mt-2 text-xl font-semibold text-slate-900">Staff area</h1>
-        <p className="mt-2 text-slate-700">
-          You have access as <span className="font-semibold">{user.role}</span>. Employee management APIs will connect
-          here in upcoming stories.
-        </p>
+      <div className="mx-auto max-w-xl rounded-xl border bg-white p-6 shadow">
+        <Link to="/" className="text-indigo-600">
+          ← Home
+        </Link>
+
+        <h1 className="mt-2 text-xl font-semibold">Add Employee</h1>
+
+        {user && (
+          <p className="mt-2 text-sm text-slate-600">
+            Signed in as <span className="font-semibold">{user.role}</span>
+          </p>
+        )}
+
+        <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+          <input
+            name="name"
+            value={form.name}
+            placeholder="Name"
+            onChange={handleChange}
+            className="w-full border p-2"
+          />
+          <input
+            name="ssn"
+            value={form.ssn}
+            placeholder="SSN"
+            onChange={handleChange}
+            className="w-full border p-2"
+          />
+          <input
+            name="department"
+            value={form.department}
+            placeholder="Department"
+            onChange={handleChange}
+            className="w-full border p-2"
+          />
+          <input
+            name="rate"
+            value={form.rate}
+            placeholder="Rate"
+            onChange={handleChange}
+            className="w-full border p-2"
+          />
+          <select
+            name="payType"
+            value={form.payType}
+            onChange={handleChange}
+            className="w-full border p-2"
+          >
+            <option value="hourly">Hourly</option>
+            <option value="salary">Salary</option>
+          </select>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="rounded bg-indigo-600 px-4 py-2 text-white disabled:opacity-50"
+          >
+            {submitting ? "Adding..." : "Add Employee"}
+          </button>
+        </form>
+
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold">Employee List</h2>
+
+          {employees.length === 0 ? (
+            <p className="mt-2 text-sm text-slate-500">No employees found.</p>
+          ) : (
+            <ul className="mt-3 space-y-2">
+              {employees.map((emp) => (
+                <li key={emp._id} className="rounded border p-3">
+                  <div className="font-medium">{emp.name}</div>
+                  <div className="text-sm text-slate-600">
+                    SSN: {emp.ssn} | Dept: {emp.department} | Pay Type: {emp.payType} | Rate: ${emp.rate}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );

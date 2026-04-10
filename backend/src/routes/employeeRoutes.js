@@ -13,4 +13,34 @@ router.get("/", requireAuth, requireRoles("Admin", "Manager"), async (req, res) 
   }
 });
 
+router.post("/", requireAuth, requireRoles("Admin", "Manager"), async (req, res) => {
+  try {
+    const { name, department, rate, payType } = req.body;
+    const ssn = String(req.body.ssn);
+    
+    if (!name || !ssn || !department || !rate || !payType) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    const existingEmployee = await Employee.findOne({ ssn });
+
+    if (existingEmployee) {
+      return res.status(400).json({ message: "SSN already exists." });
+    }
+
+    const employee = await Employee.create({
+      name,
+      ssn,
+      department,
+      rate,
+      payType,
+    });
+
+    return res.status(201).json(employee);
+  } catch (error) {
+    console.error("Error creating employee:", error);
+    return res.status(500).json({ message: "Server error creating employee." });
+  }
+});
+
 module.exports = router;
