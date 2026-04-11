@@ -5,9 +5,14 @@ function ResetPassword() {
   const navigate = useNavigate();
   const { token } = useParams();
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setMessage("");
+    setError("");
 
     try {
       const response = await fetch(
@@ -23,14 +28,18 @@ function ResetPassword() {
 
       const data = await response.json();
 
-      alert(data.message || data.error);
-
       if (response.ok) {
-        navigate("/login");
+        setMessage("Password updated successfully. Redirecting to login...");
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      } else {
+        setError(data.error || "Something went wrong.");
       }
     } catch (error) {
       console.error("Reset password fetch error:", error);
-      alert("Request failed.");
+      setError("Request failed.");
     }
   };
 
@@ -40,6 +49,18 @@ function ResetPassword() {
         <h2 className="mb-6 text-center text-xl font-semibold text-slate-900">
           Reset Password
         </h2>
+
+        {message && (
+          <p className="mb-4 text-center text-sm text-green-600">
+            {message}
+          </p>
+        )}
+
+        {error && (
+          <p className="mb-4 text-center text-sm text-red-600">
+            {error}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
