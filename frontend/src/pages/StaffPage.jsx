@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { deactivateEmployee } from "../services/employeeService";
 
 function StaffPage({ user }) {
   const [form, setForm] = useState({
@@ -12,6 +13,7 @@ function StaffPage({ user }) {
 
   const [employees, setEmployees] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [deactivatingId, setDeactivatingId] = useState("");
 
   const fetchEmployees = async () => {
     try {
@@ -86,6 +88,31 @@ function StaffPage({ user }) {
       alert("Server error.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDeactivate = async (employeeId, employeeName) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to deactivate ${employeeName}?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeactivatingId(employeeId);
+
+      await deactivateEmployee(employeeId);
+
+      alert("Employee deactivated successfully.");
+
+      await fetchEmployees();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Failed to deactivate employee.");
+    } finally {
+      setDeactivatingId("");
     }
   };
 
@@ -165,6 +192,15 @@ function StaffPage({ user }) {
                   <div className="text-sm text-slate-600">
                     SSN: {emp.ssn} | Dept: {emp.department} | Pay Type: {emp.payType} | Rate: ${emp.rate}
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeactivate(emp._id, emp.name)}
+                    disabled={deactivatingId === emp._id}
+                    className="mt-3 rounded bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {deactivatingId === emp._id ? "Deactivating..." : "Deactivate"}
+                  </button>
                 </li>
               ))}
             </ul>
