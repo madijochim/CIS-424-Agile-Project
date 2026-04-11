@@ -14,6 +14,10 @@ function StaffPage({ user }) {
   const [employees, setEmployees] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [deactivatingId, setDeactivatingId] = useState("");
+  const [search, setSearch] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const fetchEmployees = async () => {
     try {
