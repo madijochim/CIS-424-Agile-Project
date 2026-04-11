@@ -80,6 +80,12 @@ function Login() {
           </button>
         </form>
 
+        <p className="mt-4 text-center text-sm">
+          <Link to="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-800">
+            Forgot Password?
+          </Link>
+        </p>
+
         {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
         <p className="mt-6 text-center text-sm text-slate-600">
