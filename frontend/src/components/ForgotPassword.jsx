@@ -25,11 +25,7 @@ function ForgotPassword() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage("A password reset link has been sent to your email. Redirecting to login...");
-
-        setTimeout(() => {
-          navigate("/login");
-        }, 5000);
+        setMessage("A password reset link has been sent to your email.");
       } else {
         setError(data.error || "Something went wrong.");
       }
@@ -56,7 +52,7 @@ function ForgotPassword() {
               onClick={() => navigate("/login")}
               className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
             >
-              Go to Login Now
+              Go to Login
             </button>
           </div>
         )}
