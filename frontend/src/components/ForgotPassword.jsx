@@ -58,7 +58,6 @@ function ForgotPassword() {
   const handleResend = async () => {
     if (countdown > 0 || isSubmitting) return;
 
-    // Small delay so the user can clearly see the button click before the UI updates
     setIsSubmitting(true);
 
     setTimeout(async () => {
@@ -109,23 +108,27 @@ function ForgotPassword() {
                 You can resend the link in {countdown}s
               </p>
             ) : (
-              <button
-                type="button"
-                onClick={handleResend}
-                disabled={isSubmitting}
-                className="block mx-auto text-sm font-medium text-indigo-600 hover:text-indigo-800 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {isSubmitting ? "Resending..." : "Resend Reset Link"}
-              </button>
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={isSubmitting}
+                  className="rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white shadow hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {isSubmitting ? "Resending..." : "Resend Reset Link"}
+                </button>
+              </div>
             )}
 
-            <button
-              type="button"
-              onClick={() => navigate("/login")}
-              className="block mx-auto text-sm font-medium text-indigo-600 hover:text-indigo-800"
-            >
-              Back to Login
-            </button>
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-indigo-700"
+              >
+                Back to Login
+              </button>
+            </div>
           </div>
         ) : (
           <>
