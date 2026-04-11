@@ -1,6 +1,7 @@
 const express = require("express");
 const { requireAuth, requireRoles } = require("../middleware/authMiddleware");
 const Employee = require("../models/Employee");
+const { deactivateEmployee } = require("../controllers/employeeController");
 
 const router = express.Router();
 
@@ -42,5 +43,14 @@ router.post("/", requireAuth, requireRoles("Admin", "Manager"), async (req, res)
     return res.status(500).json({ message: "Server error creating employee." });
   }
 });
+
+// Deactivate employee
+router.patch(
+  "/:id/deactivate",
+  requireAuth,
+  requireRoles("Admin", "Manager"),
+  deactivateEmployee
+);
+
 
 module.exports = router;
