@@ -20,27 +20,41 @@ function StaffPage({ user }) {
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const fetchEmployees = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/employees", {
-        credentials: "include",
-      });
+  try {
+    const params = new URLSearchParams();
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        console.error(data.message || data.error || "Failed to fetch employees.");
-        return;
-      }
-
-      setEmployees(data);
-    } catch (err) {
-      console.error("Error fetching employees:", err);
+    if (debouncedSearch) {
+      params.append("search", debouncedSearch);
     }
-  };
+
+    if (departmentFilter) {
+      params.append("department", departmentFilter);
+    }
+
+    if (statusFilter) {
+      params.append("status", statusFilter);
+    }
+
+    const res = await fetch(`http://localhost:5000/api/employees?${params.toString()}`, {
+      credentials: "include",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error(data.message || data.error || "Failed to fetch employees.");
+      return;
+    }
+
+    setEmployees(data);
+  } catch (err) {
+    console.error("Error fetching employees:", err);
+  }
+};
 
   useEffect(() => {
-    fetchEmployees();
-  }, []);
+  fetchEmployees();
+}, [debouncedSearch, departmentFilter, statusFilter]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
