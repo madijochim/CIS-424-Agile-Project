@@ -66,67 +66,68 @@ function ForgotPassword() {
           Forgot Password
         </h2>
 
-        {message && (
-          <div className="mb-4 text-center">
-            <p className="mb-2 text-sm text-green-600">
+        {/* SUCCESS STATE */}
+        {message ? (
+          <div className="text-center space-y-3">
+            <p className="text-sm text-green-600">
               {message}
             </p>
 
+            {countdown > 0 ? (
+              <p className="text-sm text-slate-600">
+                You can resend the link in {countdown}s
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={handleResend}
+                className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+              >
+                Resend Reset Link
+              </button>
+            )}
+
             <button
-              type="button"
               onClick={() => navigate("/login")}
-              className="mb-2 text-sm font-medium text-indigo-600 hover:text-indigo-800"
+              className="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-800"
             >
-              Go to Login
+              Back to Login
             </button>
-
-            <div className="text-sm">
-              {countdown > 0 ? (
-                <p className="text-slate-600">
-                  You can resend the reset link in {countdown} second{countdown !== 1 ? "s" : ""}.
-                </p>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  className="font-medium text-indigo-600 hover:text-indigo-800"
-                >
-                  Resend Reset Link
-                </button>
-              )}
-            </div>
           </div>
+        ) : (
+          <>
+            {/* ERROR */}
+            {error && (
+              <p className="mb-4 text-center text-sm text-red-600">
+                {error}
+              </p>
+            )}
+
+            {/* FORM */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-white disabled:opacity-70"
+              >
+                {isSubmitting ? "Sending..." : "Send Reset Link"}
+              </button>
+            </form>
+          </>
         )}
-
-        {error && (
-          <p className="mb-4 text-center text-sm text-red-600">
-            {error}
-          </p>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {isSubmitting ? "Sending..." : "Send Reset Link"}
-          </button>
-        </form>
       </div>
     </div>
   );
