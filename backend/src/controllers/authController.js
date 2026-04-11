@@ -69,13 +69,14 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    const resetLink = `http://localhost:3000/reset-password/${token}`;
+    const resetLink = `http://localhost:5173/reset-password/${token}`;
     await sendPasswordResetEmail(user.email, resetLink);
 
     return res.status(200).json({
       message: "Password reset link sent successfully.",
     });
   } catch (error) {
+    console.error("forgotPassword error:", error);
     return res.status(500).json({
       error: "Server error while sending password reset link.",
     });
@@ -110,6 +111,7 @@ const resetPassword = async (req, res) => {
       message: "Password updated successfully.",
     });
   } catch (error) {
+    console.error("resetPassword error:", error);
     return res.status(500).json({
       error: "Server error while resetting password.",
     });
