@@ -208,21 +208,21 @@ function StaffPage({ user }) {
         <div className="mt-6">
           <h2 className="text-lg font-semibold">Employee List</h2>
 
-          <div className="mt-4 grid items-center gap-3 md:grid-cols-12">
+          <div className="mt-4 flex flex-wrap gap-3">
             <input
               type="text"
-              placeholder="Search by name"
+              placeholder="Search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded border p-2 md:col-span-5"
+              className="min-w-[180px] flex-1 rounded border p-2"
             />
 
             <select
               value={departmentFilter}
               onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="w-full rounded border p-2 md:col-span-3"
+              className="min-w-[150px] rounded border p-2"
             >
-              <option value="">All Departments</option>
+              <option value="">Department</option>
               <option value="Operations">Operations</option>
               <option value="Disabled">Disabled</option>
               <option value="North Holland">North Holland</option>
@@ -233,11 +233,12 @@ function StaffPage({ user }) {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full rounded border p-2 md:col-span-2"
+              className="min-w-[120px] rounded border p-2"
             >
+              <option value="active">Status</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
-              <option value="all">All Statuses</option>
+              <option value="all">All</option>
             </select>
 
             <button
@@ -247,9 +248,9 @@ function StaffPage({ user }) {
                 setDepartmentFilter("");
                 setStatusFilter("active");
               }}
-              className="w-full rounded bg-slate-200 px-4 py-2 text-sm text-slate-800 hover:bg-slate-300 md:col-span-2"
+              className="rounded bg-slate-200 px-3 py-2 text-sm text-slate-800 hover:bg-slate-300"
             >
-              Clear Filters
+              Clear
             </button>
           </div>
 
