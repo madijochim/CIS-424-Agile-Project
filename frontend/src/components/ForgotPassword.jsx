@@ -1,14 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function ForgotPassword() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      console.log("Sending forgot password request for:", email);
-
       const response = await fetch("http://localhost:5000/api/auth/forgot-password", {
         method: "POST",
         headers: {
@@ -17,15 +17,16 @@ function ForgotPassword() {
         body: JSON.stringify({ email }),
       });
 
-      console.log("Response status:", response.status);
-
       const data = await response.json();
-      console.log("Response data:", data);
 
-      alert(data.message || data.error || "Request completed.");
+      alert(data.message || data.error);
+
+      if (response.ok) {
+        navigate("/login");
+      }
     } catch (error) {
       console.error("Forgot password fetch error:", error);
-      alert("Request failed before reaching the backend.");
+      alert("Request failed.");
     }
   };
 
