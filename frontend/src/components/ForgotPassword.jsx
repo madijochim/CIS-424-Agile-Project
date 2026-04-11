@@ -4,9 +4,14 @@ import { useNavigate } from "react-router-dom";
 function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setMessage("");
+    setError("");
 
     try {
       const response = await fetch("http://localhost:5000/api/auth/forgot-password", {
@@ -19,14 +24,18 @@ function ForgotPassword() {
 
       const data = await response.json();
 
-      alert(data.message || data.error);
-
       if (response.ok) {
-        navigate("/login");
+        setMessage("A password reset link has been sent to your email.");
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      } else {
+        setError(data.error || "Something went wrong.");
       }
     } catch (error) {
       console.error("Forgot password fetch error:", error);
-      alert("Request failed.");
+      setError("Request failed.");
     }
   };
 
@@ -36,6 +45,18 @@ function ForgotPassword() {
         <h2 className="mb-6 text-center text-xl font-semibold text-slate-900">
           Forgot Password
         </h2>
+
+        {message && (
+          <p className="mb-4 text-center text-sm text-green-600">
+            {message}
+          </p>
+        )}
+
+        {error && (
+          <p className="mb-4 text-center text-sm text-red-600">
+            {error}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
