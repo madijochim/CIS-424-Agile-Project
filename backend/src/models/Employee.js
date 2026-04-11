@@ -28,6 +28,13 @@ const employeeSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
+    // Keep track of whether the employee is active or inactive
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
     seedMeta: {
       type: Boolean,
       default: false,
