@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { deactivateEmployee } from "../services/employeeService";
 
 function StaffPage({ user }) {
   const [form, setForm] = useState({
@@ -12,10 +13,29 @@ function StaffPage({ user }) {
 
   const [employees, setEmployees] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [deactivatingId, setDeactivatingId] = useState("");
+  const [search, setSearch] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const fetchEmployees = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/employees", {
+      const params = new URLSearchParams();
+
+      if (debouncedSearch) {
+        params.append("search", debouncedSearch);
+      }
+
+      if (departmentFilter) {
+        params.append("department", departmentFilter);
+      }
+
+      if (statusFilter) {
+        params.append("status", statusFilter);
+      }
+
+      const res = await fetch(`http://localhost:5000/api/employees?${params.toString()}`, {
         credentials: "include",
       });
 
@@ -34,7 +54,15 @@ function StaffPage({ user }) {
 
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [debouncedSearch, departmentFilter, statusFilter]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -86,6 +114,31 @@ function StaffPage({ user }) {
       alert("Server error.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDeactivate = async (employeeId, employeeName) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to deactivate ${employeeName}?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeactivatingId(employeeId);
+
+      await deactivateEmployee(employeeId);
+
+      alert("Employee deactivated successfully.");
+
+      await fetchEmployees();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Failed to deactivate employee.");
+    } finally {
+      setDeactivatingId("");
     }
   };
 
@@ -155,6 +208,52 @@ function StaffPage({ user }) {
         <div className="mt-6">
           <h2 className="text-lg font-semibold">Employee List</h2>
 
+          <div className="mt-4 flex flex-wrap gap-3">
+            <input
+              type="text"
+              placeholder="Search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="min-w-[180px] flex-1 rounded border p-2"
+            />
+
+            <select
+              value={departmentFilter}
+              onChange={(e) => setDepartmentFilter(e.target.value)}
+              className="min-w-[150px] rounded border p-2"
+            >
+              <option value="">Department</option>
+              <option value="Operations">Operations</option>
+              <option value="Disabled">Disabled</option>
+              <option value="North Holland">North Holland</option>
+              <option value="O'Hare">O'Hare</option>
+              <option value="South Lake">South Lake</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="min-w-[120px] rounded border p-2"
+            >
+              <option value="active">Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="all">All</option>
+            </select>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setDepartmentFilter("");
+                setStatusFilter("active");
+              }}
+              className="rounded bg-slate-200 px-3 py-2 text-sm text-slate-800 hover:bg-slate-300"
+            >
+              Clear
+            </button>
+          </div>
+
           {employees.length === 0 ? (
             <p className="mt-2 text-sm text-slate-500">No employees found.</p>
           ) : (
@@ -163,8 +262,19 @@ function StaffPage({ user }) {
                 <li key={emp._id} className="rounded border p-3">
                   <div className="font-medium">{emp.name}</div>
                   <div className="text-sm text-slate-600">
-                    SSN: {emp.ssn} | Dept: {emp.department} | Pay Type: {emp.payType} | Rate: ${emp.rate}
+                    SSN: {emp.ssn} | Dept: {emp.department} | Pay Type: {emp.payType} | Rate: ${emp.rate} | Status: {emp.isActive ? "Active" : "Inactive"}
                   </div>
+
+                  {emp.isActive && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeactivate(emp._id, emp.name)}
+                      disabled={deactivatingId === emp._id}
+                      className="mt-3 rounded bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {deactivatingId === emp._id ? "Deactivating..." : "Deactivate"}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
