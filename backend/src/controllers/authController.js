@@ -57,26 +57,39 @@ const forgotPassword = async (req, res) => {
 
     const { email } = req.body;
 
+    if (!email) {
+      return res.status(400).json({
+        error: "Email is required.",
+      });
+    }
+
+    console.log("Looking up user...");
     const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
-      console.log("User not found");
       return res.status(404).json({
         error: "User not found.",
       });
     }
 
+    console.log("User found:", user.email);
+
+    console.log("Generating token...");
     const token = generateResetToken();
 
+    console.log("Saving reset token to user...");
     user.resetPasswordToken = token;
     user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
 
     await user.save();
 
+    console.log("Building reset link...");
     const resetLink = `http://localhost:5173/reset-password/${token}`;
-    console.log("Generated reset link:", resetLink);
 
+    console.log("Sending password reset email...");
     await sendPasswordResetEmail(user.email, resetLink);
+
+    console.log("Password reset flow completed.");
 
     return res.status(200).json({
       message: "Password reset link sent successfully.",
@@ -84,7 +97,7 @@ const forgotPassword = async (req, res) => {
   } catch (error) {
     console.error("forgotPassword error:", error);
     return res.status(500).json({
-      error: "Server error while sending password reset link.",
+      error: error.message || "Server error while sending password reset link.",
     });
   }
 };
