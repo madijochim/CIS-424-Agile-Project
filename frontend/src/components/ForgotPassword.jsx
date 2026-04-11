@@ -25,11 +25,11 @@ function ForgotPassword() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage("A password reset link has been sent to your email.");
+        setMessage("A password reset link has been sent to your email. Redirecting to login...");
 
         setTimeout(() => {
           navigate("/login");
-        }, 2000);
+        }, 5000);
       } else {
         setError(data.error || "Something went wrong.");
       }
@@ -47,9 +47,18 @@ function ForgotPassword() {
         </h2>
 
         {message && (
-          <p className="mb-4 text-center text-sm text-green-600">
-            {message}
-          </p>
+          <div className="mb-4 text-center">
+            <p className="mb-2 text-sm text-green-600">
+              {message}
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("/login")}
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+            >
+              Go to Login Now
+            </button>
+          </div>
         )}
 
         {error && (
