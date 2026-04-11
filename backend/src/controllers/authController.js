@@ -50,13 +50,17 @@ const registerUser = async (req, res) => {
   }
 };
 
+// Forgot password handler
 const forgotPassword = async (req, res) => {
   try {
+    console.log("forgotPassword route hit:", req.body);
+
     const { email } = req.body;
 
     const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
+      console.log("User not found");
       return res.status(404).json({
         error: "User not found.",
       });
@@ -70,6 +74,8 @@ const forgotPassword = async (req, res) => {
     await user.save();
 
     const resetLink = `http://localhost:5173/reset-password/${token}`;
+    console.log("Generated reset link:", resetLink);
+
     await sendPasswordResetEmail(user.email, resetLink);
 
     return res.status(200).json({
@@ -83,8 +89,11 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+// Reset password handler
 const resetPassword = async (req, res) => {
   try {
+    console.log("resetPassword route hit");
+
     const { token } = req.params;
     const { password } = req.body;
 
@@ -94,6 +103,7 @@ const resetPassword = async (req, res) => {
     });
 
     if (!user) {
+      console.log("Invalid or expired token");
       return res.status(400).json({
         error: "Invalid or expired reset token.",
       });
@@ -107,6 +117,8 @@ const resetPassword = async (req, res) => {
 
     await user.save();
 
+    console.log("Password updated");
+
     return res.status(200).json({
       message: "Password updated successfully.",
     });
@@ -118,6 +130,7 @@ const resetPassword = async (req, res) => {
   }
 };
 
+// Login user
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -157,6 +170,7 @@ const loginUser = async (req, res) => {
   }
 };
 
+// Get current user
 const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -171,6 +185,7 @@ const getMe = async (req, res) => {
   }
 };
 
+// Logout user
 const logoutUser = (req, res) => {
   res.clearCookie(COOKIE_NAME, {
     httpOnly: true,
