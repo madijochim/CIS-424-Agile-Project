@@ -1,7 +1,8 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const { sendConfirmationEmail } = require("../utils/email");
+const { sendConfirmationEmail, sendPasswordResetEmail } = require("../utils/email");
+const { generateResetToken } = require("../utils/token");
 const { getJwtSecret } = require("../middleware/authMiddleware");
 
 const COOKIE_NAME = "token";
@@ -45,6 +46,72 @@ const registerUser = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       error: "Server error while registering user.",
+    });
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found.",
+      });
+    }
+
+    const token = generateResetToken();
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
+
+    await user.save();
+
+    const resetLink = `http://localhost:3000/reset-password/${token}`;
+    await sendPasswordResetEmail(user.email, resetLink);
+
+    return res.status(200).json({
+      message: "Password reset link sent successfully.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Server error while sending password reset link.",
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        error: "Invalid or expired reset token.",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password updated successfully.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Server error while resetting password.",
     });
   }
 };
@@ -114,6 +181,8 @@ const logoutUser = (req, res) => {
 
 module.exports = {
   registerUser,
+  forgotPassword,
+  resetPassword,
   loginUser,
   getMe,
   logoutUser,
