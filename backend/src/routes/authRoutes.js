@@ -7,6 +7,7 @@ const {
   getMe,
   logoutUser,
 } = require("../controllers/authController");
+const { requireAuth } = require("../middleware/authMiddleware");
 const {
   registerFieldRules,
   loginFieldRules,
