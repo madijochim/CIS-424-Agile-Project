@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { sendConfirmationEmail, sendPasswordResetEmail } = require("../utils/email");
-const { generateResetToken } = require("../utils/token");
+const generateResetToken = require("../utils/token");
 const { getJwtSecret } = require("../middleware/authMiddleware");
 
 const COOKIE_NAME = "token";
