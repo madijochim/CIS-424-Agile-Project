@@ -46,6 +46,14 @@ function StaffPage({ user }) {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(search);
+  }, 400);
+
+  return () => clearTimeout(timer);
+ }, [search]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
