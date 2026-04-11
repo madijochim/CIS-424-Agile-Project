@@ -20,7 +20,6 @@ function ForgotPassword() {
   }, [countdown]);
 
   const sendResetLink = async () => {
-    setMessage("");
     setError("");
     setIsSubmitting(true);
 
@@ -39,10 +38,12 @@ function ForgotPassword() {
         setMessage("A password reset link has been sent to your email.");
         setCountdown(60);
       } else {
+        setMessage("");
         setError(data.error || "Something went wrong.");
       }
     } catch (error) {
       console.error("Forgot password fetch error:", error);
+      setMessage("");
       setError("Request failed.");
     } finally {
       setIsSubmitting(false);
@@ -56,7 +57,38 @@ function ForgotPassword() {
 
   const handleResend = async () => {
     if (countdown > 0 || isSubmitting) return;
-    await sendResetLink();
+
+    // Small delay so the user can clearly see the button click before the UI updates
+    setIsSubmitting(true);
+
+    setTimeout(async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/auth/forgot-password", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setMessage("A password reset link has been sent to your email.");
+          setCountdown(60);
+          setError("");
+        } else {
+          setMessage("");
+          setError(data.error || "Something went wrong.");
+        }
+      } catch (error) {
+        console.error("Forgot password fetch error:", error);
+        setMessage("");
+        setError("Request failed.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    }, 700);
   };
 
   return (
@@ -66,9 +98,8 @@ function ForgotPassword() {
           Forgot Password
         </h2>
 
-        {/* SUCCESS STATE */}
         {message ? (
-          <div className="text-center space-y-3">
+          <div className="text-center space-y-4">
             <p className="text-sm text-green-600">
               {message}
             </p>
@@ -81,47 +112,51 @@ function ForgotPassword() {
               <button
                 type="button"
                 onClick={handleResend}
-                className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                disabled={isSubmitting}
+                className="block mx-auto text-sm font-medium text-indigo-600 hover:text-indigo-800 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Resend Reset Link
+                {isSubmitting ? "Resending..." : "Resend Reset Link"}
               </button>
             )}
 
             <button
+              type="button"
               onClick={() => navigate("/login")}
-              className="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-800"
+              className="block mx-auto text-sm font-medium text-indigo-600 hover:text-indigo-800"
             >
               Back to Login
             </button>
           </div>
         ) : (
           <>
-            {/* ERROR */}
             {error && (
               <p className="mb-4 text-center text-sm text-red-600">
                 {error}
               </p>
             )}
 
-            {/* FORM */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label
+                  htmlFor="email"
+                  className="mb-1 block text-sm font-medium text-slate-700"
+                >
                   Email
                 </label>
                 <input
+                  id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-white disabled:opacity-70"
+                className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSubmitting ? "Sending..." : "Send Reset Link"}
               </button>
