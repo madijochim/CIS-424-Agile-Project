@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function ForgotPassword() {
@@ -6,12 +6,23 @@ function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [countdown, setCountdown] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (countdown <= 0) return;
 
+    const timer = setTimeout(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
+  const sendResetLink = async () => {
     setMessage("");
     setError("");
+    setIsSubmitting(true);
 
     try {
       const response = await fetch("http://localhost:5000/api/auth/forgot-password", {
@@ -26,13 +37,26 @@ function ForgotPassword() {
 
       if (response.ok) {
         setMessage("A password reset link has been sent to your email.");
+        setCountdown(60);
       } else {
         setError(data.error || "Something went wrong.");
       }
     } catch (error) {
       console.error("Forgot password fetch error:", error);
       setError("Request failed.");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await sendResetLink();
+  };
+
+  const handleResend = async () => {
+    if (countdown > 0 || isSubmitting) return;
+    await sendResetLink();
   };
 
   return (
@@ -47,13 +71,30 @@ function ForgotPassword() {
             <p className="mb-2 text-sm text-green-600">
               {message}
             </p>
+
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+              className="mb-2 text-sm font-medium text-indigo-600 hover:text-indigo-800"
             >
               Go to Login
             </button>
+
+            <div className="text-sm">
+              {countdown > 0 ? (
+                <p className="text-slate-600">
+                  You can resend the reset link in {countdown} second{countdown !== 1 ? "s" : ""}.
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  className="font-medium text-indigo-600 hover:text-indigo-800"
+                >
+                  Resend Reset Link
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -80,9 +121,10 @@ function ForgotPassword() {
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-indigo-700"
+            disabled={isSubmitting}
+            className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Send Reset Link
+            {isSubmitting ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
       </div>
