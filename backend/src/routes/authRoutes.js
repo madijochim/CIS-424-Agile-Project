@@ -1,11 +1,12 @@
 const express = require("express");
 const {
   registerUser,
+  forgotPassword,
+  resetPassword,
   loginUser,
   getMe,
   logoutUser,
 } = require("../controllers/authController");
-const { requireAuth } = require("../middleware/authMiddleware");
 const {
   registerFieldRules,
   loginFieldRules,
@@ -16,6 +17,8 @@ const router = express.Router();
 
 router.post("/register", registerFieldRules, handleValidation, registerUser);
 router.post("/login", loginFieldRules, handleValidation, loginUser);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 router.post("/logout", logoutUser);
 router.get("/me", requireAuth, getMe);
 
