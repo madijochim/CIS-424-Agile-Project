@@ -7,11 +7,34 @@ const router = express.Router();
 
 router.get("/", requireAuth, requireRoles("Admin", "Manager"), async (req, res) => {
   try {
-    const employees = await Employee.find({ isActive: true })
+    const { search = "", department = "", status = "active" } = req.query;
+
+    const query = {};
+
+    // Filter by employee status
+    if (status === "active") {
+      query.isActive = true;
+    } else if (status === "inactive") {
+      query.isActive = false;
+    }
+
+    // Filter by department
+    if (department) {
+      query.department = department;
+    }
+
+    // Filter by employee name search
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
+    }
+
+    const employees = await Employee.find(query)
       .sort({ createdAt: -1 })
       .lean();
+
     return res.json(employees);
   } catch (error) {
+    console.error("Error listing employees:", error);
     return res.status(500).json({ error: "Server error listing employees." });
   }
 });
