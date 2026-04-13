@@ -2,7 +2,10 @@
  * US-031: Rollback removes seeded documents created by migrate.js (does not drop the database).
  */
 const path = require("path");
+module.paths.unshift(path.join(__dirname, "../../backend/node_modules"));
 require("dotenv").config({ path: path.join(__dirname, "../../backend/.env") });
+
+require(path.join(__dirname, "../../backend/src/config/mongoDns")).applyMongoDnsFromEnv();
 
 const mongoose = require("mongoose");
 

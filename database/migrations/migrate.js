@@ -3,7 +3,11 @@
  * Run from repo root: cd backend && npm run migrate
  */
 const path = require("path");
+// This file lives outside backend/, so Node would not resolve backend/node_modules by default.
+module.paths.unshift(path.join(__dirname, "../../backend/node_modules"));
 require("dotenv").config({ path: path.join(__dirname, "../../backend/.env") });
+
+require(path.join(__dirname, "../../backend/src/config/mongoDns")).applyMongoDnsFromEnv();
 
 const mongoose = require("mongoose");
 const User = require("../../backend/src/models/User");
