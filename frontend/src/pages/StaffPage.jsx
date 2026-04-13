@@ -266,14 +266,23 @@ function StaffPage({ user }) {
                   </div>
 
                   {emp.isActive && (
-                    <button
-                      type="button"
-                      onClick={() => handleDeactivate(emp._id, emp.name)}
-                      disabled={deactivatingId === emp._id}
-                      className="mt-3 rounded bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-50"
-                    >
-                      {deactivatingId === emp._id ? "Deactivating..." : "Deactivate"}
-                    </button>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDeactivate(emp._id, emp.name)}
+                        disabled={deactivatingId === emp._id}
+                        className="rounded bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-50"
+                      >
+                        {deactivatingId === emp._id ? "Deactivating..." : "Deactivate"}
+                      </button>
+
+                      <Link
+                        to={`/edit-employee/${emp._id}`}
+                        className="rounded bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
+                      >
+                        Edit Information
+                      </Link>
+                    </div>                  
                   )}
                 </li>
               ))}

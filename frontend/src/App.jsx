@@ -3,6 +3,7 @@ import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import StaffPage from "./pages/StaffPage";
+import EditEmployeePage from "./pages/EditEmployeePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -39,6 +40,15 @@ export function AppRoutes() {
         }
       /> */}
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/edit-employee/:id" element={
+        <ProtectedRoute>
+          {({ user }) => (
+            <RoleRoute user={user} allow={["Admin", "Manager"]}>
+              <EditEmployeePage user={user} />
+            </RoleRoute>
+          )}
+        </ProtectedRoute>
+      }/>
     </Routes>
   );
 }

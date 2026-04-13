@@ -28,6 +28,38 @@ const employeeSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    jobTitle: {
+     type: String,
+     trim: true,
+     default: null,
+    },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      default: null,
+      validate: {
+        validator: function (v) {
+          return v === null || /^\S+@\S+\.\S+$/.test(v);
+        },
+        message: "Invalid email address"
+      }
+    },
+    phone: { 
+      type: String,
+      trim: true,
+      default: null,
+      validate: { 
+        validator: function (v) {
+          return v === null || /^\+?[0-9\-() ]+$/.test(v);
+        },
+        message: "Invalid phone number"
+      }
+    },
+    hireDate: {
+      type: Date,
+      default: Date.now
+    },
 
     // Keep track of whether the employee is active or inactive
     isActive: {

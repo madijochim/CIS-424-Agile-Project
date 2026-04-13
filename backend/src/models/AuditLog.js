@@ -10,14 +10,23 @@ const auditLogSchema = new mongoose.Schema(
     targetUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      default: null, //not required so you can target either a user or an employee
+    },
+    targetEmployeeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+      default: null, // not required so you can target either an employee or a user
     },
     action: {
       type: String,
       required: true,
     },
-    previousRole: { type: String },
-    newRole: { type: String, required: true },
+    previousRole: { type: String, default: null },
+    newRole: { type: String, default: null },
+    changes: {
+      type: Object,
+      default: {},
+    },
   },
   { timestamps: true }
 );
