@@ -42,11 +42,20 @@ router.get("/", requireAuth, requireRoles("Admin", "Manager"), async (req, res) 
 
 router.post("/", requireAuth, requireRoles("Admin", "Manager"), async (req, res) => {
   try {
-    const { name, department, rate, payType } = req.body;
+    const { name, department, rate, payType, salary, payFrequency } = req.body;
     const ssn = String(req.body.ssn);
-    
-    if (!name || !ssn || !department || !rate || !payType) {
+
+    // Updated validation to support salary employees
+    if (!name || !ssn || !department || !payType) {
       return res.status(400).json({ message: "All fields are required." });
+    }
+
+    if (payType === "hourly" && (!rate && rate !== 0)) {
+      return res.status(400).json({ message: "Hourly rate is required." });
+    }
+
+    if (payType === "salary" && (!salary || !payFrequency)) {
+      return res.status(400).json({ message: "Salary and pay frequency are required." });
     }
 
     const existingEmployee = await Employee.findOne({ ssn });
@@ -55,12 +64,15 @@ router.post("/", requireAuth, requireRoles("Admin", "Manager"), async (req, res)
       return res.status(400).json({ message: "SSN already exists." });
     }
 
+    // Updated to handle hourly vs salary properly
     const employee = await Employee.create({
       name,
       ssn,
       department,
-      rate,
       payType,
+      rate: payType === "hourly" ? rate : null,
+      salary: payType === "salary" ? salary : null,
+      payFrequency: payType === "salary" ? payFrequency : null,
     });
 
     return res.status(201).json(employee);
@@ -110,8 +122,14 @@ router.put("/:id", requireAuth, requireRoles("Admin", "Manager"), async (req, re
       {
         name: req.body.name,
         department: req.body.department,
-        rate: req.body.rate,
         payType: req.body.payType,
+
+        // Updated: handle hourly vs salary
+        rate: req.body.payType === "hourly" ? req.body.rate : null,
+        hoursWorked: req.body.payType === "hourly" ? (req.body.hoursWorked ?? 0) : 0,
+        salary: req.body.payType === "salary" ? req.body.salary : null,
+        payFrequency: req.body.payType === "salary" ? req.body.payFrequency : null,
+
         jobTitle: req.body.jobTitle || null,
         email: req.body.email || null,
         phone: req.body.phone || null,
@@ -131,6 +149,9 @@ router.put("/:id", requireAuth, requireRoles("Admin", "Manager"), async (req, re
       "name",
       "department",
       "rate",
+      "hoursWorked",     // added
+      "salary",          // added
+      "payFrequency",    // added
       "payType",
       "jobTitle",
       "email",

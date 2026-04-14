@@ -9,6 +9,8 @@ function StaffPage({ user }) {
     department: "",
     rate: "",
     payType: "hourly",
+    salary: "",
+    payFrequency: "",
   });
 
   const [employees, setEmployees] = useState([]);
@@ -65,14 +67,37 @@ function StaffPage({ user }) {
   }, [search]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "payType") {
+      setForm({
+        ...form,
+        payType: value,
+        rate: "",
+        salary: "",
+        payFrequency: "",
+      });
+      return;
+    }
+
+    setForm({ ...form, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.name || !form.ssn || !form.department || !form.rate || !form.payType) {
+    if (!form.name || !form.ssn || !form.department || !form.payType) {
       alert("All fields are required.");
+      return;
+    }
+
+    if (form.payType === "hourly" && !form.rate) {
+      alert("Hourly rate is required.");
+      return;
+    }
+
+    if (form.payType === "salary" && (!form.salary || !form.payFrequency)) {
+      alert("Salary and pay frequency are required.");
       return;
     }
 
@@ -86,8 +111,13 @@ function StaffPage({ user }) {
         },
         credentials: "include",
         body: JSON.stringify({
-          ...form,
-          rate: Number(form.rate),
+          name: form.name,
+          ssn: form.ssn,
+          department: form.department,
+          payType: form.payType,
+          rate: form.payType === "hourly" ? Number(form.rate) : null,
+          salary: form.payType === "salary" ? Number(form.salary) : null,
+          payFrequency: form.payType === "salary" ? form.payFrequency : null,
         }),
       });
 
@@ -106,6 +136,8 @@ function StaffPage({ user }) {
         department: "",
         rate: "",
         payType: "hourly",
+        salary: "",
+        payFrequency: "",
       });
 
       await fetchEmployees();
@@ -179,13 +211,7 @@ function StaffPage({ user }) {
             onChange={handleChange}
             className="w-full border p-2"
           />
-          <input
-            name="rate"
-            value={form.rate}
-            placeholder="Rate"
-            onChange={handleChange}
-            className="w-full border p-2"
-          />
+
           <select
             name="payType"
             value={form.payType}
@@ -195,6 +221,39 @@ function StaffPage({ user }) {
             <option value="hourly">Hourly</option>
             <option value="salary">Salary</option>
           </select>
+
+          {form.payType === "hourly" && (
+            <input
+              name="rate"
+              value={form.rate}
+              placeholder="Hourly Rate"
+              onChange={handleChange}
+              className="w-full border p-2"
+            />
+          )}
+
+          {form.payType === "salary" && (
+            <>
+              <input
+                name="salary"
+                value={form.salary}
+                placeholder="Annual Salary"
+                onChange={handleChange}
+                className="w-full border p-2"
+              />
+
+              <select
+                name="payFrequency"
+                value={form.payFrequency}
+                onChange={handleChange}
+                className="w-full border p-2"
+              >
+                <option value="">Select Frequency</option>
+                <option value="weekly">Weekly</option>
+                <option value="biweekly">Biweekly</option>
+              </select>
+            </>
+          )}
 
           <button
             type="submit"
@@ -262,7 +321,13 @@ function StaffPage({ user }) {
                 <li key={emp._id} className="rounded border p-3">
                   <div className="font-medium">{emp.name}</div>
                   <div className="text-sm text-slate-600">
-                    SSN: {emp.ssn} | Dept: {emp.department} | Pay Type: {emp.payType} | Rate: ${emp.rate} | Status: {emp.isActive ? "Active" : "Inactive"}
+                    SSN: {emp.ssn} | Dept: {emp.department} | Pay Type: {emp.payType} |{" "}
+                    {emp.payType === "hourly" ? (
+                      <>Rate: ${emp.rate}</>
+                    ) : (
+                      <>Salary: ${Number(emp.salary || 0).toLocaleString()} | Frequency: {emp.payFrequency || "N/A"}</>
+                    )}{" "}
+                    | Status: {emp.isActive ? "Active" : "Inactive"}
                   </div>
 
                   {emp.isActive && (
@@ -282,7 +347,7 @@ function StaffPage({ user }) {
                       >
                         Edit Information
                       </Link>
-                    </div>                  
+                    </div>
                   )}
                 </li>
               ))}

@@ -22,7 +22,7 @@ function HomePage({ user }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-8 space-y-4">
+      <main className="mx-auto max-w-3xl space-y-4 px-4 py-8">
         <p className="text-slate-700">
           Signed in as <span className="font-medium">{user.name}</span> ({user.email})
         </p>
@@ -32,15 +32,29 @@ function HomePage({ user }) {
 
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <h2 className="mb-2 font-medium text-slate-900">Quick links</h2>
+
           <ul className="list-inside list-disc space-y-1 text-sm text-indigo-700">
             <li>
               <Link to="/register" className="hover:underline">
                 Register another account
               </Link>
             </li>
+
             <li>
               <Link to="/staff" className="hover:underline">
                 Staff area (Managers &amp; Admins only)
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/run-payroll" className="hover:underline">
+                Run Payroll
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/payroll" className="hover:underline">
+                View Payroll Results
               </Link>
             </li>
           </ul>

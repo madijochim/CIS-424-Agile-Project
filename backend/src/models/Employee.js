@@ -18,21 +18,45 @@ const employeeSchema = new mongoose.Schema(
       required: true,
       enum: ["hourly", "salary"],
     },
+
+    // Updated: no longer required (so salary employees work)
     rate: {
       type: Number,
-      required: true,
       min: 0,
+      default: null,
     },
+
+    // ✅ NEW FIELDS FOR PAYROLL
+    hoursWorked: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
+    salary: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
+
+    payFrequency: {
+      type: String,
+      enum: ["weekly", "biweekly"],
+      default: null,
+    },
+
     department: {
       type: String,
       required: true,
       trim: true,
     },
+
     jobTitle: {
-     type: String,
-     trim: true,
-     default: null,
+      type: String,
+      trim: true,
+      default: null,
     },
+
     email: {
       type: String,
       trim: true,
@@ -45,23 +69,24 @@ const employeeSchema = new mongoose.Schema(
         message: "Invalid email address"
       }
     },
-    phone: { 
+
+    phone: {
       type: String,
       trim: true,
       default: null,
-      validate: { 
+      validate: {
         validator: function (v) {
           return v === null || /^\+?[0-9\-() ]+$/.test(v);
         },
         message: "Invalid phone number"
       }
     },
+
     hireDate: {
       type: Date,
       default: Date.now
     },
 
-    // Keep track of whether the employee is active or inactive
     isActive: {
       type: Boolean,
       default: true,
