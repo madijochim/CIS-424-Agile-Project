@@ -31,6 +31,7 @@ function RunPayrollPage() {
           totalHours: emp.hoursWorked ?? "",
           salary: emp.salary ?? "",
           payFrequency: emp.payFrequency ?? "",
+          bonusPay: emp.bonusPay ?? "",
         };
       });
 
@@ -77,10 +78,12 @@ function RunPayrollPage() {
           ? null
           : otHours * rate * 1.5;
 
+        const bonusPay = Number(currentInputs.bonusPay ?? emp.bonusPay ?? 0);
+
         const totalGrossPay =
           Number.isNaN(regularHours) || Number.isNaN(rate) || regularHours < 0 || rate < 0 || otHours < 0
             ? null
-            : (regularHours * rate) + (otHours * rate * 1.5);
+            : (regularHours * rate) + (otHours * rate * 1.5) + bonusPay;
 
         return {
           ...emp,
@@ -92,6 +95,7 @@ function RunPayrollPage() {
             hourlyRate: rate,
             standardGrossPay,
             overtimeGrossPay,
+            bonusPay,
             totalGrossPay,
           },
         };
@@ -105,10 +109,12 @@ function RunPayrollPage() {
         if (payFrequency === "weekly") periods = 52;
         if (payFrequency === "biweekly") periods = 26;
 
+        const bonusPay = Number(currentInputs.bonusPay ?? emp.bonusPay ?? 0);
+
         const totalGrossPay =
           Number.isNaN(salary) || salary < 0 || periods <= 0
             ? null
-            : salary / periods;
+            : (salary / periods) + bonusPay;
 
         return {
           ...emp,
@@ -117,6 +123,7 @@ function RunPayrollPage() {
             annualSalary: Number.isNaN(salary) ? "" : salary,
             payFrequency,
             periods,
+            bonusPay,
             totalGrossPay,
           },
         };
@@ -155,6 +162,8 @@ function RunPayrollPage() {
             currentInputs.totalHours === "" ? 0 : Number(currentInputs.totalHours);
           payload.salary = null;
           payload.payFrequency = null;
+          payload.bonusPay =
+            currentInputs.bonusPay === "" ? 0 : Number(currentInputs.bonusPay);
         }
 
         if (emp.payType === "salary") {
@@ -163,6 +172,8 @@ function RunPayrollPage() {
           payload.salary =
             currentInputs.salary === "" ? null : Number(currentInputs.salary);
           payload.payFrequency = currentInputs.payFrequency || null;
+          payload.bonusPay =
+            currentInputs.bonusPay === "" ? 0 : Number(currentInputs.bonusPay);
         }
 
         const res = await fetch(`http://localhost:5000/api/employees/${emp._id}`, {
@@ -228,6 +239,7 @@ function RunPayrollPage() {
                       <th className="border px-3 py-2 text-left">Frequency</th>
                       <th className="border px-3 py-2 text-left">Standard Gross</th>
                       <th className="border px-3 py-2 text-left">Overtime Gross</th>
+                      <th className="border px-3 py-2 text-left">Bonus Pay</th>
                       <th className="border px-3 py-2 text-left">Total Gross</th>
                     </tr>
                   </thead>
@@ -306,6 +318,17 @@ function RunPayrollPage() {
                           {emp.payrollPreview?.overtimeGrossPay
                             ? `$${emp.payrollPreview.overtimeGrossPay.toFixed(2)}`
                             : "-"}
+                        </td>
+
+                        <td className="border px-3 py-2">
+                          <input
+                            type="number"
+                            value={inputsById[emp._id]?.bonusPay ?? emp.bonusPay ?? ""}
+                            onChange={(e) =>
+                              handleInputChange(emp._id, "bonusPay", e.target.value)
+                            }
+                            className="border p-1 w-20"
+                          />
                         </td>
 
                         <td className="border px-3 py-2">

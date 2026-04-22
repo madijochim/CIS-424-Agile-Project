@@ -1,4 +1,4 @@
-function calculateHourlyPay(hoursWorked, hourlyRate) {
+function calculateHourlyPay(hoursWorked, hourlyRate, bonusPay) {
   if (hoursWorked == null || hourlyRate == null) {
     throw new Error("Hours worked and hourly rate are required.");
   }
@@ -17,7 +17,8 @@ function calculateHourlyPay(hoursWorked, hourlyRate) {
   }
 
   return {
-    grossPay: ((hours-otHours) * rate) + (otHours * rate * 1.5),
+    grossPay: ((hours-otHours) * rate) + (otHours * rate * 1.5) + bonusPay,
+    bonusPay: bonusPay,
     normalPay: (hours-otHours) * rate,
     overtimePay: otHours * rate * 1.5,
     hoursWorked: hours,
@@ -26,7 +27,7 @@ function calculateHourlyPay(hoursWorked, hourlyRate) {
   };
 }
 
-function calculateSalaryPay(salary, payFrequency) {
+function calculateSalaryPay(salary, payFrequency, bonusPay) {
   if (salary == null || !payFrequency) {
     throw new Error("Salary and pay frequency are required.");
   }
@@ -52,7 +53,8 @@ function calculateSalaryPay(salary, payFrequency) {
   }
 
   return {
-    grossPay: annualSalary / periods,
+    grossPay: (annualSalary / periods) + bonusPay,
+    bonusPay: bonusPay,
     annualSalary,
     payFrequency,
     periods,

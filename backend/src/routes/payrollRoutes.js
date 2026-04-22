@@ -16,7 +16,7 @@ router.get("/runs", requireAuth, async (req, res) => {
     const payroll = employees.map((employee) => {
       try {
         if (employee.payType === "hourly") {
-          const result = calculateHourlyPay(employee.hoursWorked, employee.rate);
+          const result = calculateHourlyPay(employee.hoursWorked, employee.rate, employee.bonusPay);
 
           return {
             ...employee,
@@ -28,12 +28,13 @@ router.get("/runs", requireAuth, async (req, res) => {
               grossPay: result.grossPay,
               normalPay: result.normalPay,
               overtimePay: result.overtimePay,
+              bonusPay: result.bonusPay,
             },
           };
         }
 
         if (employee.payType === "salary") {
-          const result = calculateSalaryPay(employee.salary, employee.payFrequency);
+          const result = calculateSalaryPay(employee.salary, employee.payFrequency, employee.bonusPay);
 
           return {
             ...employee,
@@ -43,6 +44,7 @@ router.get("/runs", requireAuth, async (req, res) => {
               payFrequency: result.payFrequency,
               periods: result.periods,
               grossPay: result.grossPay,
+              bonusPay: result.bonusPay,
             },
           };
         }

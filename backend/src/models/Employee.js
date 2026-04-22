@@ -33,6 +33,12 @@ const employeeSchema = new mongoose.Schema(
       default: 0,
     },
 
+    bonusPay: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
     salary: {
       type: Number,
       min: 0,

@@ -6,6 +6,14 @@ const AuditLog = require("../models/AuditLog");
 
 const router = express.Router();
 
+const sanitizeMoney = (value, fallback = 0) => {
+  const num = Number(value);
+
+  if (!Number.isFinite(num)) return fallback;
+
+  return Math.max(0, Math.round(num * 100) / 100);
+};
+
 router.get("/", requireAuth, requireRoles("Admin", "Manager"), async (req, res) => {
   try {
     const { search = "", department = "", status = "active" } = req.query;
@@ -127,6 +135,7 @@ router.put("/:id", requireAuth, requireRoles("Admin", "Manager"), async (req, re
         // Updated: handle hourly vs salary
         rate: req.body.payType === "hourly" ? req.body.rate : null,
         hoursWorked: req.body.payType === "hourly" ? (req.body.hoursWorked ?? 0) : 0,
+        bonusPay: sanitizeMoney(req.body.bonusPay, 0),
         salary: req.body.payType === "salary" ? req.body.salary : null,
         payFrequency: req.body.payType === "salary" ? req.body.payFrequency : null,
 
@@ -150,6 +159,7 @@ router.put("/:id", requireAuth, requireRoles("Admin", "Manager"), async (req, re
       "department",
       "rate",
       "hoursWorked",     // added
+      "bonusPay",        // added
       "salary",          // added
       "payFrequency",    // added
       "payType",

@@ -88,6 +88,9 @@ function PayrollPage() {
                       )}
 
                       <div className="mt-1 font-semibold">
+                        Bonus Pay: ${emp.payroll?.bonusPay}
+                      </div>
+                      <div className="mt-1 font-semibold">
                         Total Gross Pay: ${emp.payroll?.grossPay}
                       </div>
                     </div>
