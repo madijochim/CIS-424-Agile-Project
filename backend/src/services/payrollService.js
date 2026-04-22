@@ -3,8 +3,10 @@ function calculateHourlyPay(hoursWorked, hourlyRate) {
     throw new Error("Hours worked and hourly rate are required.");
   }
 
+  
   const hours = Number(hoursWorked);
   const rate = Number(hourlyRate);
+  const otHours = hours > 40 ? hours - 40 : 0
 
   if (Number.isNaN(hours) || Number.isNaN(rate)) {
     throw new Error("Hours and rate must be numbers.");
@@ -15,8 +17,11 @@ function calculateHourlyPay(hoursWorked, hourlyRate) {
   }
 
   return {
-    grossPay: hours * rate,
+    grossPay: ((hours-otHours) * rate) + (otHours * rate * 1.5),
+    normalPay: (hours-otHours) * rate,
+    overtimePay: otHours * rate * 1.5,
     hoursWorked: hours,
+    overtimeHours: otHours,
     hourlyRate: rate,
   };
 }

@@ -23,8 +23,11 @@ router.get("/runs", requireAuth, async (req, res) => {
             payroll: {
               payType: "hourly",
               hoursWorked: result.hoursWorked,
+              overtimeHours: result.overtimeHours,
               hourlyRate: result.hourlyRate,
               grossPay: result.grossPay,
+              normalPay: result.normalPay,
+              overtimePay: result.overtimePay,
             },
           };
         }

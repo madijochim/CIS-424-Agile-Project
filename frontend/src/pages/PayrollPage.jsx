@@ -67,7 +67,15 @@ function PayrollPage() {
                       {emp.payroll?.payType === "hourly" && (
                         <>
                           <div>Hours Worked: {emp.payroll.hoursWorked}</div>
+                          <div>Overtime Hours: {emp.payroll.overtimeHours}</div>
                           <div>Hourly Rate: ${emp.payroll.hourlyRate}</div>
+                          <div className="mt-1 font-semibold">
+                            Gross Standard Pay: ${emp.payroll.normalPay}
+                          </div>
+                          <div className="mt-1 font-semibold">
+                            Gross Overtime Pay: ${emp.payroll.overtimePay}
+                          </div>
+
                         </>
                       )}
 
@@ -80,7 +88,7 @@ function PayrollPage() {
                       )}
 
                       <div className="mt-1 font-semibold">
-                        Gross Pay: ${emp.payroll?.grossPay}
+                        Total Gross Pay: ${emp.payroll?.grossPay}
                       </div>
                     </div>
                   )}

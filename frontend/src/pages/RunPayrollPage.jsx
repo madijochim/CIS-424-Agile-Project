@@ -28,7 +28,7 @@ function RunPayrollPage() {
       const initialInputs = {};
       (data.employees || []).forEach((emp) => {
         initialInputs[emp._id] = {
-          regularHours: emp.hoursWorked ?? "",
+          totalHours: emp.hoursWorked ?? "",
           salary: emp.salary ?? "",
           payFrequency: emp.payFrequency ?? "",
         };
@@ -62,21 +62,37 @@ function RunPayrollPage() {
       const currentInputs = inputsById[emp._id] || {};
 
       if (emp.payType === "hourly") {
-        const regularHours = Number(currentInputs.regularHours ?? emp.hoursWorked ?? 0);
+        const totalHours = Number(currentInputs.totalHours ?? emp.hoursWorked ?? 0);
+        const regularHours = totalHours > 40 ? 40 : totalHours;
+        const otHours = totalHours > 40 ? totalHours - 40 : 0;
         const rate = Number(emp.rate ?? 0);
 
-        const grossPay =
+        const standardGrossPay =
           Number.isNaN(regularHours) || Number.isNaN(rate) || regularHours < 0 || rate < 0
+          ? null
+          : regularHours * rate;
+
+        const overtimeGrossPay = 
+          Number.isNaN(otHours) || Number.isNaN(rate) || otHours < 0 || rate < 0
+          ? null
+          : otHours * rate * 1.5;
+
+        const totalGrossPay =
+          Number.isNaN(regularHours) || Number.isNaN(rate) || regularHours < 0 || rate < 0 || otHours < 0
             ? null
-            : regularHours * rate;
+            : (regularHours * rate) + (otHours * rate * 1.5);
 
         return {
           ...emp,
           payrollPreview: {
             payType: "hourly",
+            totalHours: Number.isNaN(totalHours) ? "" : totalHours,
             regularHours: Number.isNaN(regularHours) ? "" : regularHours,
+            otHours: Number.isNaN(otHours) ? "" : otHours,
             hourlyRate: rate,
-            grossPay,
+            standardGrossPay,
+            overtimeGrossPay,
+            totalGrossPay,
           },
         };
       }
@@ -89,7 +105,7 @@ function RunPayrollPage() {
         if (payFrequency === "weekly") periods = 52;
         if (payFrequency === "biweekly") periods = 26;
 
-        const grossPay =
+        const totalGrossPay =
           Number.isNaN(salary) || salary < 0 || periods <= 0
             ? null
             : salary / periods;
@@ -101,7 +117,7 @@ function RunPayrollPage() {
             annualSalary: Number.isNaN(salary) ? "" : salary,
             payFrequency,
             periods,
-            grossPay,
+            totalGrossPay,
           },
         };
       }
@@ -136,7 +152,7 @@ function RunPayrollPage() {
         if (emp.payType === "hourly") {
           payload.rate = emp.rate;
           payload.hoursWorked =
-            currentInputs.regularHours === "" ? 0 : Number(currentInputs.regularHours);
+            currentInputs.totalHours === "" ? 0 : Number(currentInputs.totalHours);
           payload.salary = null;
           payload.payFrequency = null;
         }
@@ -204,11 +220,15 @@ function RunPayrollPage() {
                       <th className="border px-3 py-2 text-left">Name</th>
                       <th className="border px-3 py-2 text-left">Department</th>
                       <th className="border px-3 py-2 text-left">Pay Type</th>
-                      <th className="border px-3 py-2 text-left">Hours</th>
+                      <th className="border px-3 py-2 text-left">Total Hours</th>
+                      <th className="border px-3 py-2 text-left">Standard Hours</th>
+                      <th className="border px-3 py-2 text-left">Overtime Hours</th>
                       <th className="border px-3 py-2 text-left">Rate</th>
                       <th className="border px-3 py-2 text-left">Salary</th>
                       <th className="border px-3 py-2 text-left">Frequency</th>
-                      <th className="border px-3 py-2 text-left">Gross</th>
+                      <th className="border px-3 py-2 text-left">Standard Gross</th>
+                      <th className="border px-3 py-2 text-left">Overtime Gross</th>
+                      <th className="border px-3 py-2 text-left">Total Gross</th>
                     </tr>
                   </thead>
 
@@ -223,13 +243,25 @@ function RunPayrollPage() {
                           {emp.payType === "hourly" ? (
                             <input
                               type="number"
-                              value={inputsById[emp._id]?.regularHours ?? emp.hoursWorked ?? ""}
+                              value={inputsById[emp._id]?.totalHours ?? emp.hoursWorked ?? ""}
                               onChange={(e) =>
-                                handleInputChange(emp._id, "regularHours", e.target.value)
+                                handleInputChange(emp._id, "totalHours", e.target.value)
                               }
                               className="border p-1 w-20"
                             />
                           ) : "—"}
+                        </td>
+
+                        <td className="border px-3 py-2">
+                          {emp.payType === "hourly"
+                            ? emp.payrollPreview?.regularHours ?? "-"
+                            : "-"}
+                        </td>
+
+                        <td className="border px-3 py-2">
+                          {emp.payType === "hourly"
+                            ? emp.payrollPreview?.otHours ?? "-"
+                            : "-"}
                         </td>
 
                         <td className="border px-3 py-2">
@@ -265,8 +297,20 @@ function RunPayrollPage() {
                         </td>
 
                         <td className="border px-3 py-2">
-                          {emp.payrollPreview?.grossPay
-                            ? `$${emp.payrollPreview.grossPay.toFixed(2)}`
+                          {emp.payrollPreview?.standardGrossPay
+                            ? `$${emp.payrollPreview.standardGrossPay.toFixed(2)}`
+                            : "-"}
+                        </td>
+
+                        <td className="border px-3 py-2">
+                          {emp.payrollPreview?.overtimeGrossPay
+                            ? `$${emp.payrollPreview.overtimeGrossPay.toFixed(2)}`
+                            : "-"}
+                        </td>
+
+                        <td className="border px-3 py-2">
+                          {emp.payrollPreview?.totalGrossPay
+                            ? `$${emp.payrollPreview.totalGrossPay.toFixed(2)}`
                             : "-"}
                         </td>
                       </tr>
