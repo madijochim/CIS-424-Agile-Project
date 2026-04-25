@@ -16,17 +16,19 @@ function StaffPage({ user }) {
   const [employees, setEmployees] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [deactivatingId, setDeactivatingId] = useState("");
-  const [search, setSearch] = useState("");
+  /** Text in the search box (draft until user searches). */
+  const [searchDraft, setSearchDraft] = useState("");
+  /** Value sent to the API (updated by Search button or Enter). */
+  const [searchApplied, setSearchApplied] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("active");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const fetchEmployees = async () => {
     try {
       const params = new URLSearchParams();
 
-      if (debouncedSearch) {
-        params.append("search", debouncedSearch);
+      if (searchApplied) {
+        params.append("search", searchApplied);
       }
 
       if (departmentFilter) {
@@ -56,15 +58,11 @@ function StaffPage({ user }) {
 
   useEffect(() => {
     fetchEmployees();
-  }, [debouncedSearch, departmentFilter, statusFilter]);
+  }, [searchApplied, departmentFilter, statusFilter]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [search]);
+  const runSearch = () => {
+    setSearchApplied(searchDraft.trim());
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -176,12 +174,20 @@ function StaffPage({ user }) {
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8">
-      <div className="mx-auto max-w-xl rounded-xl border bg-white p-6 shadow">
-        <Link to="/" className="text-indigo-600">
+      <div className="mx-auto max-w-5xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <Link to="/" className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
           ← Home
         </Link>
 
-        <h1 className="mt-2 text-xl font-semibold">Add Employee</h1>
+        <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-indigo-600">
+          Trojan Payroll Solutions
+        </p>
+        <h1 className="mt-1 text-2xl font-bold text-slate-900">Staff</h1>
+        <p className="mt-1 max-w-2xl text-sm text-slate-600">
+          Add employees below, then use search and filters to find people in the list.
+        </p>
+
+        <h2 className="mt-8 text-lg font-semibold text-slate-900">Add employee</h2>
 
         {user && (
           <p className="mt-2 text-sm text-slate-600">
@@ -264,54 +270,81 @@ function StaffPage({ user }) {
           </button>
         </form>
 
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold">Employee List</h2>
+        <div className="mt-10 border-t border-slate-200 pt-8">
+          <h2 className="text-lg font-semibold text-slate-900">Employee list</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Type a name (or part of a name), then click <strong>Search</strong> or press Enter.
+            Department and status apply as soon as you change them.
+          </p>
 
-          <div className="mt-4 flex flex-wrap gap-3">
-            <input
-              type="text"
-              placeholder="Search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="min-w-[180px] flex-1 rounded border p-2"
-            />
+          <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
+            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-stretch">
+              <input
+                type="search"
+                placeholder="Search by employee name…"
+                value={searchDraft}
+                onChange={(e) => setSearchDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    runSearch();
+                  }
+                }}
+                className="min-h-[42px] min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              />
+              <button
+                type="button"
+                onClick={runSearch}
+                className="min-h-[42px] shrink-0 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+              >
+                Search
+              </button>
+            </div>
 
-            <select
-              value={departmentFilter}
-              onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="min-w-[150px] rounded border p-2"
-            >
-              <option value="">Department</option>
-              <option value="Operations">Operations</option>
-              <option value="Disabled">Disabled</option>
-              <option value="North Holland">North Holland</option>
-              <option value="O'Hare">O'Hare</option>
-              <option value="South Lake">South Lake</option>
-            </select>
+            <div className="flex flex-wrap gap-3 lg:ml-auto">
+              <select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="min-h-[42px] min-w-[160px] rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              >
+                <option value="">All departments</option>
+                <option value="Operations">Operations</option>
+                <option value="Disabled">Disabled</option>
+                <option value="North Holland">North Holland</option>
+                <option value="O'Hare">O'Hare</option>
+                <option value="South Lake">South Lake</option>
+              </select>
 
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="min-w-[120px] rounded border p-2"
-            >
-              <option value="active">Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="all">All</option>
-            </select>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="min-h-[42px] min-w-[140px] rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              >
+                <option value="active">Active only</option>
+                <option value="inactive">Inactive only</option>
+                <option value="all">All statuses</option>
+              </select>
 
-            <button
-              type="button"
-              onClick={() => {
-                setSearch("");
-                setDepartmentFilter("");
-                setStatusFilter("active");
-              }}
-              className="rounded bg-slate-200 px-3 py-2 text-sm text-slate-800 hover:bg-slate-300"
-            >
-              Clear
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchDraft("");
+                  setSearchApplied("");
+                  setDepartmentFilter("");
+                  setStatusFilter("active");
+                }}
+                className="min-h-[42px] rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50"
+              >
+                Clear all
+              </button>
+            </div>
           </div>
+
+          {searchApplied ? (
+            <p className="mt-2 text-xs text-slate-500">
+              Showing results for name containing: <span className="font-medium text-slate-700">&quot;{searchApplied}&quot;</span>
+            </p>
+          ) : null}
 
           {employees.length === 0 ? (
             <p className="mt-2 text-sm text-slate-500">No employees found.</p>
@@ -346,6 +379,13 @@ function StaffPage({ user }) {
                         className="rounded bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
                       >
                         Edit Information
+                      </Link>
+
+                      <Link
+                        to={`/employee/${emp._id}/tax`}
+                        className="rounded bg-slate-700 px-3 py-2 text-sm text-white hover:bg-slate-800"
+                      >
+                        Tax settings
                       </Link>
                     </div>
                   )}

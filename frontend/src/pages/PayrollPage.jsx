@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+function formatMoney(n) {
+  const x = Number(n);
+  if (!Number.isFinite(x)) return "—";
+  return x.toFixed(2);
+}
+
 function PayrollPage() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,8 +97,31 @@ function PayrollPage() {
                         Bonus Pay: ${emp.payroll?.bonusPay}
                       </div>
                       <div className="mt-1 font-semibold">
-                        Total Gross Pay: ${emp.payroll?.grossPay}
+                        Total Gross Pay: ${formatMoney(emp.payroll?.grossPay)}
                       </div>
+
+                      {emp.payroll?.tax?.error ? (
+                        <p className="mt-2 text-sm text-amber-800">{emp.payroll.tax.error}</p>
+                      ) : emp.payroll?.tax ? (
+                        <div className="mt-3 border-t border-slate-200 pt-2 text-sm">
+                          <div className="font-medium text-slate-900">Taxes &amp; net (tax year {emp.payroll.tax.taxYear})</div>
+                          <div className="mt-1 text-slate-700">
+                            Filing: {emp.payroll.tax.filingStatus}
+                            {emp.payroll.tax.periodsPerYear != null && (
+                              <> · Periods/yr: {emp.payroll.tax.periodsPerYear}</>
+                            )}
+                          </div>
+                          <div className="mt-1">Federal withholding: ${formatMoney(emp.payroll.tax.federalWithholding)}</div>
+                          <div>Social Security: ${formatMoney(emp.payroll.tax.socialSecurity)}</div>
+                          <div>Medicare: ${formatMoney(emp.payroll.tax.medicare)}</div>
+                          <div className="font-semibold text-slate-900">
+                            Total deductions: ${formatMoney(emp.payroll.tax.totalDeductions)}
+                          </div>
+                          <div className="font-semibold text-indigo-800">
+                            Net pay: ${formatMoney(emp.payroll.tax.netPay)}
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   )}
                 </div>

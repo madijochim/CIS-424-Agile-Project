@@ -125,6 +125,14 @@ router.put("/:id", requireAuth, requireRoles("Admin", "Manager"), async (req, re
     }
 
     // 2. Perform update
+    const filingFromBody = req.body.federalFilingStatus;
+    const federalFilingStatus =
+      filingFromBody !== undefined
+        ? ["single", "married"].includes(filingFromBody)
+          ? filingFromBody
+          : existing.federalFilingStatus
+        : existing.federalFilingStatus;
+
     const updated = await Employee.findByIdAndUpdate(
       req.params.id,
       {
@@ -138,6 +146,20 @@ router.put("/:id", requireAuth, requireRoles("Admin", "Manager"), async (req, re
         bonusPay: sanitizeMoney(req.body.bonusPay, 0),
         salary: req.body.payType === "salary" ? req.body.salary : null,
         payFrequency: req.body.payType === "salary" ? req.body.payFrequency : null,
+
+        federalFilingStatus,
+        federalAdditionalWithholding:
+          req.body.federalAdditionalWithholding !== undefined
+            ? sanitizeMoney(req.body.federalAdditionalWithholding, 0)
+            : existing.federalAdditionalWithholding,
+        ytdSocialSecurityWages:
+          req.body.ytdSocialSecurityWages !== undefined
+            ? sanitizeMoney(req.body.ytdSocialSecurityWages, existing.ytdSocialSecurityWages ?? 0)
+            : existing.ytdSocialSecurityWages,
+        ytdMedicareWages:
+          req.body.ytdMedicareWages !== undefined
+            ? sanitizeMoney(req.body.ytdMedicareWages, existing.ytdMedicareWages ?? 0)
+            : existing.ytdMedicareWages,
 
         jobTitle: req.body.jobTitle || null,
         email: req.body.email || null,
@@ -163,6 +185,10 @@ router.put("/:id", requireAuth, requireRoles("Admin", "Manager"), async (req, re
       "salary",          // added
       "payFrequency",    // added
       "payType",
+      "federalFilingStatus",
+      "federalAdditionalWithholding",
+      "ytdSocialSecurityWages",
+      "ytdMedicareWages",
       "jobTitle",
       "email",
       "phone",

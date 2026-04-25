@@ -9,6 +9,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import PayrollPage from "./pages/PayrollPage";
 import RunPayrollPage from "./pages/RunPayrollPage";
+import EmployeeTaxPage from "./pages/EmployeeTaxPage";
 
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import RoleRoute from "./components/auth/RoleRoute";
@@ -72,6 +73,19 @@ export function AppRoutes() {
             {({ user }) => (
               <RoleRoute user={user} allow={["Admin", "Manager"]}>
                 <EditEmployeePage user={user} />
+              </RoleRoute>
+            )}
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/employee/:id/tax"
+        element={
+          <ProtectedRoute>
+            {({ user }) => (
+              <RoleRoute user={user} allow={["Admin", "Manager"]}>
+                <EmployeeTaxPage />
               </RoleRoute>
             )}
           </ProtectedRoute>

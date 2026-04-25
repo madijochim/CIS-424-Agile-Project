@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
+function formatMoney(n) {
+  const x = Number(n);
+  if (!Number.isFinite(x)) return "—";
+  return x.toFixed(2);
+}
+
 function RunPayrollPage() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [inputsById, setInputsById] = useState({});
+  /** @type {Record<string, object>} */
+  const [taxPayrollById, setTaxPayrollById] = useState({});
 
   const fetchEmployees = async () => {
     try {
@@ -36,6 +44,12 @@ function RunPayrollPage() {
       });
 
       setInputsById(initialInputs);
+
+      const taxSeed = {};
+      (data.employees || []).forEach((e) => {
+        if (e._id && e.payroll) taxSeed[e._id] = e.payroll;
+      });
+      setTaxPayrollById(taxSeed);
     } catch (err) {
       console.error(err);
       setError(err.message || "Server error.");
@@ -47,6 +61,45 @@ function RunPayrollPage() {
   useEffect(() => {
     fetchEmployees();
   }, []);
+
+  useEffect(() => {
+    if (!employees.length) {
+      setTaxPayrollById({});
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const lines = employees.map((emp) => ({
+          employeeId: emp._id,
+          totalHours: inputsById[emp._id]?.totalHours,
+          salary: inputsById[emp._id]?.salary,
+          payFrequency: inputsById[emp._id]?.payFrequency,
+          bonusPay: inputsById[emp._id]?.bonusPay,
+        }));
+
+        const res = await fetch("http://localhost:5000/api/payroll/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ lines }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) return;
+
+        const next = {};
+        (data.employees || []).forEach((row) => {
+          if (row._id) next[row._id] = row.payroll;
+        });
+        setTaxPayrollById(next);
+      } catch {
+        /* ignore preview errors */
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [employees, inputsById]);
 
   const handleInputChange = (employeeId, field, value) => {
     setInputsById((prev) => ({
@@ -212,7 +265,8 @@ function RunPayrollPage() {
 
           <h1 className="mt-2 text-2xl font-semibold text-slate-900">Run Payroll</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Enter payroll inputs by employee.
+            Enter payroll inputs by employee. Federal and FICA amounts update automatically (preview)
+            as you type; save inputs to persist hours, salary, and bonus to the employee record.
           </p>
         </div>
 
@@ -241,6 +295,11 @@ function RunPayrollPage() {
                       <th className="border px-3 py-2 text-left">Overtime Gross</th>
                       <th className="border px-3 py-2 text-left">Bonus Pay</th>
                       <th className="border px-3 py-2 text-left">Total Gross</th>
+                      <th className="border px-3 py-2 text-left">Federal</th>
+                      <th className="border px-3 py-2 text-left">SS</th>
+                      <th className="border px-3 py-2 text-left">Medicare</th>
+                      <th className="border px-3 py-2 text-left">Net pay</th>
+                      <th className="border px-3 py-2 text-left">Tax</th>
                     </tr>
                   </thead>
 
@@ -335,6 +394,35 @@ function RunPayrollPage() {
                           {emp.payrollPreview?.totalGrossPay
                             ? `$${emp.payrollPreview.totalGrossPay.toFixed(2)}`
                             : "-"}
+                        </td>
+
+                        <td className="border px-3 py-2 text-slate-800">
+                          {taxPayrollById[emp._id]?.tax && !taxPayrollById[emp._id].tax.error
+                            ? `$${formatMoney(taxPayrollById[emp._id].tax.federalWithholding)}`
+                            : "—"}
+                        </td>
+                        <td className="border px-3 py-2 text-slate-800">
+                          {taxPayrollById[emp._id]?.tax && !taxPayrollById[emp._id].tax.error
+                            ? `$${formatMoney(taxPayrollById[emp._id].tax.socialSecurity)}`
+                            : "—"}
+                        </td>
+                        <td className="border px-3 py-2 text-slate-800">
+                          {taxPayrollById[emp._id]?.tax && !taxPayrollById[emp._id].tax.error
+                            ? `$${formatMoney(taxPayrollById[emp._id].tax.medicare)}`
+                            : "—"}
+                        </td>
+                        <td className="border px-3 py-2 font-medium text-indigo-900">
+                          {taxPayrollById[emp._id]?.tax && !taxPayrollById[emp._id].tax.error
+                            ? `$${formatMoney(taxPayrollById[emp._id].tax.netPay)}`
+                            : "—"}
+                        </td>
+                        <td className="border px-3 py-2">
+                          <Link
+                            to={`/employee/${emp._id}/tax`}
+                            className="text-indigo-600 hover:underline"
+                          >
+                            Edit
+                          </Link>
                         </td>
                       </tr>
                     ))}

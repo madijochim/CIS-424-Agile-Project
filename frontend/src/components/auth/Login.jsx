@@ -34,9 +34,21 @@ function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h2 className="mb-6 text-center text-xl font-semibold text-slate-900">Sign in</h2>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-100 via-slate-50 to-indigo-50/40 px-4 py-12">
+      <div className="mb-8 max-w-lg text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600">
+          Payroll &amp; compliance
+        </p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          Trojan Payroll Solutions
+        </h1>
+        <p className="mx-auto mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
+          Sign in to manage staff, run payroll, and view summaries with federal and FICA estimates.
+        </p>
+      </div>
+
+      <div className="w-full max-w-md rounded-2xl border border-slate-200/80 bg-white p-8 shadow-lg shadow-slate-200/60">
+        <h2 className="mb-6 text-center text-lg font-semibold text-slate-800">Sign in</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -93,6 +105,10 @@ function Login() {
           <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-800">
             Register
           </Link>
+        </p>
+
+        <p className="mt-8 text-center text-xs text-slate-400">
+          © {new Date().getFullYear()} Trojan Payroll Solutions
         </p>
       </div>
     </div>

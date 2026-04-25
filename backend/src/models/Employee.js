@@ -39,6 +39,30 @@ const employeeSchema = new mongoose.Schema(
       default: 0,
     },
 
+    // Tax profile (US-017)
+    federalFilingStatus: {
+      type: String,
+      enum: ["single", "married"],
+      default: "single",
+    },
+    federalAdditionalWithholding: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
+    // YTD wages for caps (US-019)
+    ytdSocialSecurityWages: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    ytdMedicareWages: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
     salary: {
       type: Number,
       min: 0,

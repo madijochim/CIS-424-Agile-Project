@@ -384,6 +384,20 @@ function EditEmployeePage() {
             </>
           )}
 
+          <div className="rounded border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+            <span className="font-medium text-slate-900">Tax withholding &amp; YTD wages</span>
+            <p className="mt-1 text-slate-600">
+              Filing status, extra federal withholding, and YTD wages for FICA caps are on a separate
+              page so this form stays focused on core employment data.
+            </p>
+            <Link
+              to={`/employee/${id}/tax`}
+              className="mt-2 inline-block font-medium text-indigo-600 hover:underline"
+            >
+              Open tax settings →
+            </Link>
+          </div>
+
           <button
             type="submit"
             className="w-full rounded bg-indigo-600 py-2 text-white hover:bg-indigo-700"
